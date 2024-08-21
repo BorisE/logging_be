@@ -1,0 +1,15 @@
+[project]
+name = "logging_be"
+version = "1.0.0"
+authors = [
+  { name="Boris Emchenko", email="e_b_s@inbox.ru" },
+]
+description = "A custom logging package"
+readme = "README.md"
+license = {file = "LICENSE"}
+
+requires-python = ">=3.10"
+
+dependencies = [
+  "logging"
+]
