@@ -1,13 +1,17 @@
 '''
 Custom logger by Boris Emchenko
-v 1.0
-2024-08-21
-
-
+v 1.0.2 2024-08-22
+----------------------------------------------------------------
+1.0.2 2024-08-22    - correct unicode support
+                    - new func clear_logging() to clear log handlers
+                    - tests
+1.0.1 2024-08-22    - unicode support
+1.0.0 2024-08-19    - inital release
+----------------------------------------------------------------
 to use it
 1) import: 
  import logging
- from logging_be import init_logging, logger
+ from logging_be import logger, init_logging
 or
  from logging_be import *
 
@@ -22,11 +26,12 @@ or
 
 
 3) use it:
-logger.action("This is an action message.") // in green
-logger.debug("Debug test")                  // if allowed in
-logger.error("We've got an error")
+    logger.info("Info message.")                // normal message
+    logger.action("This is an action message.") // in green
+    logger.debug("Debug test")                  // if allowed to be displayed in console
+    logger.error("We've got an error")          // in red
+----------------------------------------------------------------
 '''
-
 
 import sys
 import time
@@ -47,23 +52,21 @@ CDARKGREY = '\033[90m'
 CBOLD = '\033[1m'
 CEND = '\033[0m'
 
-
+# Define main logging object
 logger = logging.getLogger('custom_logger')
 
 
-# New level
+# Define new logging level
 ACTION_LEVEL_NUM = 25  # Between INFO (20) and WARNING (30)
 logging.addLevelName(ACTION_LEVEL_NUM, "ACTION")
-
 def action(self, message, *args, **kwargs):
     if self.isEnabledFor(ACTION_LEVEL_NUM):
         self._log(ACTION_LEVEL_NUM, message, args, **kwargs)
-
 logging.Logger.action = action
 
 
 # Filter for console handler to exclude WARNING and ERROR levels
-class MaxLevelFilter(logging.Filter):
+class _MaxLevelFilter(logging.Filter):
     def __init__(self, level):
         self.max_level = level
 
@@ -72,7 +75,7 @@ class MaxLevelFilter(logging.Filter):
 
 
 # Console Handler for Error Logs (Red colored)
-class ConsoleErrorHandler(logging.StreamHandler):
+class _ConsoleErrorHandler(logging.StreamHandler):
     def emit(self, record):
         try:
             if record.levelno >= logging.WARNING:
@@ -82,7 +85,7 @@ class ConsoleErrorHandler(logging.StreamHandler):
             self.handleError(record)
 
 # Console Handler for Action Logs (Green colored)
-class ConsoleActionHandler(logging.StreamHandler):
+class _ConsoleActionHandler(logging.StreamHandler):
     def emit(self, record):
         try:
             if record.levelno == ACTION_LEVEL_NUM:
@@ -91,9 +94,6 @@ class ConsoleActionHandler(logging.StreamHandler):
         except Exception:
             self.handleError(record)
 
-'''
-Call to initialize custom logging
-'''
 def init_logging(console_log_level = logging.INFO, 
                  log_path = "",
                  info_log_filename = f"info_log_{time.strftime('%Y%m%d_%H%M%S')}.log", 
@@ -102,6 +102,8 @@ def init_logging(console_log_level = logging.INFO,
                  file_log_format = "%(asctime)s [%(levelname)-6s] %(module)s/%(funcName)-15s: %(message)s",
                  console_log_format = "%(funcName)-8s: %(message)s"
                 ):
+    ''' Need to be called to initialize custom logging before using logger.info() and etc
+    '''
     global logger
     
     logger.setLevel(logging.DEBUG)
@@ -110,46 +112,60 @@ def init_logging(console_log_level = logging.INFO,
     console_handler = logging.StreamHandler()  # Console output
     console_handler.setLevel(console_log_level)
     console_handler.setFormatter(logging.Formatter(console_log_format))
-    console_handler.encoding='utf-8'
-    console_handler.addFilter(MaxLevelFilter(logging.INFO)) 
+    console_handler.encoding='UTF-8'
+    console_handler.addFilter(_MaxLevelFilter(logging.INFO)) 
     logger.addHandler(console_handler)
 
     if (info_log_filename) :
-        info_file_handler = logging.FileHandler(os.path.join(log_path, info_log_filename))  # File output
+        info_file_handler = logging.FileHandler(os.path.join(log_path, info_log_filename), encoding = "UTF-8")  # File output
         info_file_handler.setLevel(logging.INFO)
+        info_file_handler.encoding='UTF-8'
         info_file_handler.setFormatter(logging.Formatter(file_log_format))
-        info_file_handler.encoding='utf-8'
         logger.addHandler(info_file_handler)
 
     if (debug_log_filename):
-        debug_file_handler = logging.FileHandler(os.path.join(log_path, debug_log_filename))
+        debug_file_handler = logging.FileHandler(os.path.join(log_path, debug_log_filename), encoding = "UTF-8")
         debug_file_handler.setLevel(logging.DEBUG)
+        debug_file_handler.encoding='UTF-8'
         debug_file_handler.setFormatter(logging.Formatter(file_log_format))
-        debug_file_handler.encoding='utf-8'
         logger.addHandler(debug_file_handler)
 
     if (error_log_filename):
-        error_file_handler = logging.FileHandler(os.path.join(log_path, error_log_filename))
+        error_file_handler = logging.FileHandler(os.path.join(log_path, error_log_filename), encoding = "UTF-8")
         error_file_handler.setLevel(logging.WARNING)
+        error_file_handler.encoding='UTF-8'
         error_file_handler.setFormatter(logging.Formatter(file_log_format))
-        error_file_handler.encoding='utf-8'
         logger.addHandler(error_file_handler)
 
-    console_action_handler = ConsoleActionHandler(sys.stdout)
+    console_action_handler = _ConsoleActionHandler(sys.stdout)
     console_action_handler.setLevel(ACTION_LEVEL_NUM)
+    console_action_handler.encoding='UTF-8'
     console_action_handler.setFormatter(logging.Formatter(console_log_format))
-    console_action_handler.addFilter(MaxLevelFilter(ACTION_LEVEL_NUM)) 
+    console_action_handler.addFilter(_MaxLevelFilter(ACTION_LEVEL_NUM)) 
     logger.addHandler(console_action_handler)
 
-    console_error_handler = ConsoleErrorHandler(sys.stderr)
+    console_error_handler = _ConsoleErrorHandler(sys.stderr)
     console_error_handler.setLevel(logging.WARNING)
     console_error_handler.setFormatter(logging.Formatter(console_log_format))
+    console_error_handler.encoding='UTF-8'
     logger.addHandler(console_error_handler)
+
+def clear_logging():
+    '''Clear current logger handlers. Useful if you want to reinitialize logging with different parameters'''
+    logger.handlers.clear() 
 
 
 if __name__ == "__main__":
+    init_logging(
+        console_log_level=logging.INFO, 
+        info_log_filename = "", 
+        debug_log_filename = "", 
+        error_log_filename = ""     
+    )
+
     logger.debug("This is a debug message.")
     logger.info("This is an info message.")
     logger.action("This is an action message.")  # Custom ACTION level
     logger.warning("This is a warning message.")
     logger.error("This is an error message.")
+    logger.info("This is unicode: Prà")
