@@ -1,6 +1,6 @@
 # Custom logging package
 
-**logging_be** is a custom Python library for customized logging, wrapped on **logging** package.
+**logging_be** is a custom Python library for customized logging, wrapped upon **logging** package.
 
 ## Installation
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install **logging_be**.
@@ -16,11 +16,8 @@ import logging
 import logging_be 
 from logging_be import logger
 ```
-* - **import logging** statement need only if you want to redefine default log_level through **init_logging()**
-or simpler:
-```python
-from logging_be import *
-```
+* **import logging** statement only need if you are going to redefine default log_level in **init_logging()**
+
 then call **init_logging()**
 ```python
 init_logging(
@@ -33,13 +30,14 @@ init_logging(
     console_log_format = "%(funcName)-8s: %(message)s"
 )
 ```
-* from 1.0.3 default parameters for filename if None
+* from 1.0.3 default parameters for filenames is None; if None then specified above default format is used
 ## Example
 ```python
 import logging
-from logging_be import init_logging, logger
+import logging_be
+from logging_be import logger
 
-init_logging(console_log_level = logging.INFO, log_path="log")
+logging_be.init_logging(console_log_level = logging.INFO, log_path="log")
 
 logger.action("This is an action message.")  // in green
 logger.debug("Debug test")                   // if allowed in console, otherwise only to log files
