@@ -1,7 +1,8 @@
 '''
 Custom logger by Boris Emchenko
-v 1.0.2 2024-08-22
+v 1.0.3 2024-08-27
 ----------------------------------------------------------------
+1.0.3 2024-08-27    - changed init_logging file name handling: use Empty string to omit file creation, None or skipping - to use default naming
 1.0.2 2024-08-22    - correct unicode support
                     - new func clear_logging() to clear log handlers
                     - tests
@@ -51,6 +52,9 @@ CLIGHTGREY = '\033[37m'
 CDARKGREY = '\033[90m'
 CBOLD = '\033[1m'
 CEND = '\033[0m'
+# https://i.stack.imgur.com/j7e4i.gif
+# https://stackoverflow.com/questions/287871/how-do-i-print-colored-text-to-the-terminal
+
 
 # Define main logging object
 logger = logging.getLogger('custom_logger')
@@ -96,13 +100,19 @@ class _ConsoleActionHandler(logging.StreamHandler):
 
 def init_logging(console_log_level = logging.INFO, 
                  log_path = "",
-                 info_log_filename = f"info_log_{time.strftime('%Y%m%d_%H%M%S')}.log", 
-                 debug_log_filename = f"debug_log_{time.strftime('%Y%m%d_%H%M%S')}.log", 
-                 error_log_filename = f"error_log_{time.strftime('%Y%m%d_%H%M%S')}.log", 
+                 info_log_filename = None, 
+                 debug_log_filename = None, 
+                 error_log_filename = None, 
                  file_log_format = "%(asctime)s [%(levelname)-6s] %(module)s/%(funcName)-15s: %(message)s",
                  console_log_format = "%(funcName)-8s: %(message)s"
                 ):
     ''' Need to be called to initialize custom logging before using logger.info() and etc
+    
+    Keyword argument:
+        info_log_filename = f"info_log_{time.strftime('%Y%m%d_%H%M%S')}.log"    if info_log_filename is None else info_log_filename 
+        debug_log_filename = f"debug_log_{time.strftime('%Y%m%d_%H%M%S')}.log"  if debug_log_filename is None else debug_log_filename 
+        error_log_filename = f"error_log_{time.strftime('%Y%m%d_%H%M%S')}.log"  if error_log_filename is None else error_log_filename 
+        if empty string, than no log files are created
     '''
     global logger
     
@@ -116,7 +126,11 @@ def init_logging(console_log_level = logging.INFO,
     console_handler.addFilter(_MaxLevelFilter(logging.INFO)) 
     logger.addHandler(console_handler)
 
-    if (info_log_filename) :
+    info_log_filename = f"info_log_{time.strftime('%Y%m%d_%H%M%S')}.log"    if info_log_filename is None else info_log_filename 
+    debug_log_filename = f"debug_log_{time.strftime('%Y%m%d_%H%M%S')}.log"  if debug_log_filename is None else debug_log_filename 
+    error_log_filename = f"error_log_{time.strftime('%Y%m%d_%H%M%S')}.log"  if error_log_filename is None else error_log_filename 
+
+    if (info_log_filename):
         info_file_handler = logging.FileHandler(os.path.join(log_path, info_log_filename), encoding = "UTF-8")  # File output
         info_file_handler.setLevel(logging.INFO)
         info_file_handler.encoding='UTF-8'
