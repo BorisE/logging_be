@@ -13,7 +13,8 @@ pip install logging_be  # customized wrapper
 To import, use:
 ```python
 import logging
-from logging_be import init_logging, logger
+import logging_be 
+from logging_be import logger
 ```
 or simpler:
 ```python
@@ -31,6 +32,7 @@ init_logging(
     console_log_format = "%(funcName)-8s: %(message)s"
 )
 ```
+* from 1.0.3 default parameters for filename if None
 ## Example
 ```python
 import logging
