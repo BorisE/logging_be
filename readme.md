@@ -16,6 +16,7 @@ import logging
 import logging_be 
 from logging_be import logger
 ```
+* - **import logging** statement need only if you want to redefine default log_level through **init_logging()**
 or simpler:
 ```python
 from logging_be import *
