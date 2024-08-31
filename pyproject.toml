@@ -1,6 +1,6 @@
 [project]
 name = "logging_be"
-version = "1.0.3"
+version = "1.0.5"
 authors = [
   { name="Boris Emchenko", email="e_b_s@inbox.ru" },
 ]

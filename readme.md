@@ -16,7 +16,7 @@ import logging
 import logging_be 
 from logging_be import logger
 ```
-* **import logging** statement only need if you are going to redefine default log_level in **init_logging()**
+* **import logging** statement only needed if you are going to redefine default log_level in **init_logging()**
 
 then call **init_logging()**
 ```python
@@ -30,7 +30,7 @@ init_logging(
     console_log_format = "%(funcName)-8s: %(message)s"
 )
 ```
-* from 1.0.3 default parameters for filenames is None; if None then specified above default format is used
+* from 1.0.3 default parameters for filenames are None; in this case specified above default format is used
 ## Example
 ```python
 import logging

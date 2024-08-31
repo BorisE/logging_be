@@ -1,7 +1,9 @@
 '''
 Custom logger by Boris Emchenko
-v 1.0.3 2024-08-27
+v 1.0.5 2024-08-31
 ----------------------------------------------------------------
+1.0.5 2024-08-31    - gobal var Debug_Level_Enabled changed to func
+1.0.4 2024-08-31    - gobal var Debug_Level_Enabled to check if debug for console enabled
 1.0.3 2024-08-27    - changed init_logging file name handling: use Empty string to omit file creation, None or skipping - to use default naming
 1.0.2 2024-08-22    - correct unicode support
                     - new func clear_logging() to clear log handlers
@@ -59,10 +61,13 @@ CEND = '\033[0m'
 # Define main logging object
 logger = logging.getLogger('custom_logger')
 
+# Global var to check if debug in console enabled
+Debug_Level_Enabled = False
 
 # Define new logging level
 ACTION_LEVEL_NUM = 25  # Between INFO (20) and WARNING (30)
 logging.addLevelName(ACTION_LEVEL_NUM, "ACTION")
+
 def action(self, message, *args, **kwargs):
     if self.isEnabledFor(ACTION_LEVEL_NUM):
         self._log(ACTION_LEVEL_NUM, message, args, **kwargs)
@@ -115,6 +120,7 @@ def init_logging(console_log_level = logging.INFO,
         if empty string, than no log files are created
     '''
     global logger
+    global Debug_Level_Enabled
     
     logger.setLevel(logging.DEBUG)
 
@@ -125,6 +131,8 @@ def init_logging(console_log_level = logging.INFO,
     console_handler.encoding='UTF-8'
     console_handler.addFilter(_MaxLevelFilter(logging.INFO)) 
     logger.addHandler(console_handler)
+    
+    Debug_Level_Enabled = True if console_log_level == logging.DEBUG else False
 
     info_log_filename = f"info_log_{time.strftime('%Y%m%d_%H%M%S')}.log"    if info_log_filename is None else info_log_filename 
     debug_log_filename = f"debug_log_{time.strftime('%Y%m%d_%H%M%S')}.log"  if debug_log_filename is None else debug_log_filename 
@@ -183,3 +191,14 @@ if __name__ == "__main__":
     logger.warning("This is a warning message.")
     logger.error("This is an error message.")
     logger.info("This is unicode: Prà")
+    
+    
+def get_debug_enabled() -> bool:
+    '''Return status of debug messages output to console. Call init_logging() to change
+    
+    True -- debug output to console enabled
+    False -- debug output to console disabled
+    '''
+    global Debug_Level_Enabled
+    
+    return Debug_Level_Enabled
